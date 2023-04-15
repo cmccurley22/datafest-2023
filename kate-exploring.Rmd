@@ -38,10 +38,9 @@ df_attorneytimeentries %>%
 ```
 ```{r}
 df_attorney_data <-
-  merge(df_attorneys, df_attorneytimeentries, by = c("AttorneyUno", "StateAbbr"))
+  merge(df_attorneys, df_attorneytimeentries, by = c("AttorneyUno", "StateAbbr")) %>%
+  subset(select = -c(Id.x, Id.y))
 
-df_attorney_data <-
-  subset(df_attorney_data, select = -c(Id.x, Id.y))
 
 df_attorney_data
 ```
@@ -52,5 +51,14 @@ df_question_data <-
   subset(select = -c(Id.x, Id.y))
 
 df_question_data
+```
+
+```{r}
+df_categories_data <-
+  merge(df_categories, df_subcategories, by = c("CategoryUno", "StateAbbr")) %>%
+  subset(select = -c(Id.x, Id.y))
+
+
+df_categories_data
 ```
 
