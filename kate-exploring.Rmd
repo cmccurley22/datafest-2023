@@ -34,6 +34,34 @@ df_zip <- read_csv("./uszips.csv") %>%
 df_zip
 ```
 
+## Population Data
+
+```{r}
+df_pop_in <- read_csv("./data/ACSDT5Y2019.B01003-Data.csv", skip = 1)
+
+
+df_pop_narrow <- select(df_pop_in, c("Geography", "Geographic Area Name", "Estimate!!Total"))
+
+df_pop_named <-
+  df_pop_narrow %>% 
+  rename(id = Geography) %>% 
+  separate(
+    col = `Geographic Area Name`,
+    into = c("County", "state"),
+    sep = (",") 
+  ) %>%
+  mutate_if(is.character, str_trim)
+
+# df_pop_named
+
+st_crosswalk <- tibble(state = state.name) %>%
+   bind_cols(tibble(abb = state.abb)) %>% 
+   bind_rows(tibble(state = "District of Columbia", abb = "DC"))
+# st_crosswalk
+ 
+df_population <- right_join(df_pop_named, st_crosswalk, by = "state")
+```
+
 ## Including Plots
 
 You can also embed plots, for example:
@@ -99,7 +127,7 @@ df_client_state_data
 ```{r}
 big_data_1 <-
   merge(df_question_data, df_client_state_data, by = c("ClientUno", "StateAbbr")) %>%
-  subset(select = -c(ClientUno, QuestionUno, StateName))
+  subset(select = -c(QuestionUno, StateName))
 
 big_data_1
 ```
@@ -223,7 +251,7 @@ all_timesplit <-
   mutate(cat = str_detect(Subcategory, "[Dd]ivorce")) %>% 
   filter(cat == "TRUE") %>% 
   separate("Actual Time", into = c("year", "month", "day", "hour", "minutes", "seconds")) 
-
+ 
 all_timesplit
 ```
 
@@ -270,9 +298,11 @@ all_timesplit %>%
   geom_point()
 ```
 
+## Age vs Number of Posts about Divorce etc.
+
 ```{r}
-div_dem_fl %>% 
-  ggplot(mapping = aes(n)) +
+div_ag %>% 
+  ggplot(mapping = aes(n, StateAbbr, color = Gender)) +
     geom_point()
 ```
 
@@ -281,4 +311,67 @@ div_dem_fl %>%
 #   merge(big_data_1, df_attorney_data, by = c("AttorneyUno", "StateAbbr"))
 # 
 # ALL_DATA
+```
+
+```{r}
+write.csv(big_data_1, "C:\\Users\\ldao\\Downloads\\text.csv", row.names=FALSE)
+```
+
+```{r}
+text_data <-
+  big_data_1 %>% 
+  mutate(cat = str_detect(PostText, "[Dd]ivorce|[Aa]limony|[Ss]ep[ea]ratio|[Ss]ep[ea]rated| [Ee]x |[Pp]renup|[Cc]hild [Ss]upport|[Cc]ustody")) %>% 
+  filter(cat == "TRUE") %>% 
+  summarise(PostText, ClientUno)
+text_data
+write.csv(text_data, "C:\\Users\\ldao\\Downloads\\keyword_aba.csv")
+```
+
+```{r}
+post_text <-
+  text_data %>% 
+  summarise(PostText)
+
+post_text_trim <-
+  post_text %>% 
+  head(200)
+post_text_trim
+
+library("stopwords")
+library("wordcloud")
+library(readr)
+library(e1071)
+library(mlbench)
+library(tm)
+library(SnowballC)
+library("wordcloud")
+library("RColorBrewer")
+
+#library("tidytext")
+
+
+corpus = Corpus(VectorSource(post_text_trim$PostText))
+#Conversion to Lowercase
+corpus = tm_map(corpus, PlainTextDocument)
+corpus = tm_map(corpus, tolower)
+ 
+#Removing Punctuation
+corpus = tm_map(corpus, removePunctuation)
+ 
+#Remove stopwords
+corpus = tm_map(corpus, removeWords, c("cloth", stopwords("english")))
+ 
+# Eliminate white spaces
+corpus = tm_map(corpus, stripWhitespace)
+
+DTM <- TermDocumentMatrix(corpus)
+mat <- as.matrix(DTM)
+f <- sort(rowSums(mat),decreasing=TRUE)
+dat <- data.frame(word = names(f),freq=f)
+head(dat, 5)
+```
+
+```{r}
+set.seed(100)
+wordcloud(words = dat$word, freq = dat$freq, , min.freq = 15, max.words=120, random.order=TRUE, scale = c(4, .25), colors=brewer.pal(8, "Set2"))
 ```
