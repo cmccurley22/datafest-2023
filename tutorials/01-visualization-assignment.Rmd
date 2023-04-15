@@ -1,0 +1,322 @@
+---
+title: "A Brief Tour of ggplot"
+author: Zach del Rosario
+date: 2023-04-06
+output: github_document
+time: 30
+reading: 30
+---
+
+# Vis: Data Visualization Basics
+
+*Purpose*: The most powerful way for us to learn about a dataset is to _visualize the data_. Throughout this class we will make extensive use of the _grammar of graphics_, a powerful graphical programming _grammar_ that will allow us to create just about any graph you can imagine!
+
+## Optional (But Recommended!) Reading
+
+If you have time before DataFest, I highly recommend working through the following reading:
+
+*Optional Reading*: [Data Visualization Basics](https://rstudio.cloud/learn/primers/1.1). **Note**: In RStudio use `Ctrl + Click` (Mac `Command + Click`) to follow the link.
+*Topics*: `Welcome`, `A code template`, `Aesthetic mappings`.
+*Reading Time*: ~ 30 minutes
+
+# (LIVE DEMO): Overview of `ggplot`
+
+We will walk through the following code together in the tutorial.
+
+## Getting set up
+
+The following code chunk will set up our coding environment. You must *execute* the code chunk, to do so, either:
+
+- Click the **green arrow** at the right end of the code chunk, *OR*
+- Click inside the code chunk, then press the key combination *Control + Enter*
+
+If you do this correctly, you should see about a dozen lines of text appear below the chunk. These should say *Attaching packages*, along with a list of packages and version numbers. If you don't see this, make sure to ask for help!
+
+```{r setup}
+library(tidyverse)
+```
+
+
+## Anatomy of a `ggplot`
+
+We use `ggplot` to visualize data, but first we need some data to visualize! The following code will display the `mpg` dataset. This is a dataset of performance characteristics for a couple hundred models of imported cars.
+
+(Execute the following code chunk to show & inspect the dataset.)
+
+```{r}
+mpg
+```
+
+To construct a plot using ggplot, we can use code like the following:
+
+```{r}
+ggplot(mpg, aes(x = displ, y = cty)) +
+  geom_point()
+```
+
+This is a scatterplot of the city fuel economy (`cty`) against the engine displacement volume (`displ`). As we can see, larger engines tend to have lower fuel economy, but this trend "bottoms out" for the largest engines.
+
+Let's take apart the ggplot syntax:
+
+```
+# Start a plot with `ggplot()`
+ggplot(
+    data = mpg,                       # Which dataset to use
+    mapping = aes(x = displ, y = cty) # The aesthetic mapping; x = horizontal axis, y = vertical axis
+  ) +
+  geom_point()                        # Show each row using a point
+```
+
+To plot different variables, we can chanve the *aes*thetic mapping; this is done through the `aes()` function. For instance, the following code shows highway fuel economy (`hwy`) instead.
+
+```{r}
+ggplot(
+    data = mpg, 
+    # aes(x = displ, y = cty) # Old code
+    aes(x = displ, y = hwy) # New code, note change in y
+  ) +
+  geom_point()
+```
+
+## Helpful list of geometries
+
+Here is a helpful list of `geom_*()` functions we can use in ggplot.
+
+### Histogram
+
+Histograms are useful for exploring one variable at a time. A histogram gives us a sense for how a numeric quantity is distributed. 
+
+For instance, the following shows a histogram of `hwy`.
+
+```{r}
+mpg %>% 
+  ggplot(aes(x = hwy)) +
+  geom_histogram()
+```
+
+A histogram takes a continuous variable, splits its range of values into `bins`, and counts the number of observations that land in each bin. The counts are shown as bars, with the bar widths representing the bin widths, and the bar heights representing the number of observations in each bin.
+
+The histogram above shows us that `hwy` values around ~16 are common, as are values around ~26. Highway fuel economy can go as low as about 12 and over 40.
+
+One of the most important things we should do with histograms is **play with the number of bins**. This graphical parameter can drastically change what we see:
+
+```{r}
+mpg %>% 
+  ggplot(aes(x = hwy)) +
+  geom_histogram(bins = 20)
+```
+
+Here we still see the two peaks around ~16 and ~26, which lends some confidence to our prior observations.
+
+```{r}
+mpg %>% 
+  ggplot(aes(x = hwy)) +
+  geom_histogram(bins = 60)
+```
+
+The "fingers" we see above suggest that we have too many bins. We should reduce the `bins` argument.
+
+### Frequency Polygons
+
+A frequency polygon is very similar to a histogram, except the number of observations is shown using a line rather than a bar. This is helpful when we want to show counts for multiple different groups. For instance, the following shows the distribution of highway fuel economy (`hwy`) values, but as separate curves for each `class` of vehicle.
+
+```{r}
+ggplot(
+    data = mpg,
+    mapping = aes(x = hwy, color = class) # Note the additional `color` argument
+  ) +
+  geom_freqpoly(bins = 10)
+```
+
+From this display, we can see that `suv` and `pickup` class vehicles tend to have much lower fuel economy than other types. Additionally, we can now see that that "bulge" of `hwy` values around ~16 was `suv` and `pickup` vehicles!
+
+### Bars
+
+Histograms (and frequency polygons) are used to show *continuous* variables. When we have discrete variables, we should use a `geom_bar()` to show the counts. For instance, we can show the number of vehicles in each `class` with a bar chart.
+
+```{r}
+ggplot(
+  data = mpg,
+  mapping = aes(x = class)
+) +
+  geom_bar()
+```
+
+For discrete variables, we don't need to split the data into bars. Hence the need to use `geom_bar()` vs `geom_histogram()`.
+
+### Scatterplots (With layers and color)
+
+Above, we saw how to make a scatterplot using `geom_point()`. However, there are some more advanced ggplot features we can use to make more informative scatterplots. For instance, we can add *multiple* sets of points to visualize different variables. For instance, the following plot shows both `hwy` and `cty` on the same plot, and distinguishes the points using the `color` aesthetic.
+
+```{r}
+ggplot(
+  data = mpg,
+  mapping = aes(x = displ)
+) +
+  geom_point(mapping = aes(y = hwy, color = "hwy")) +
+  geom_point(mapping = aes(y = cty, color = "cty"))
+```
+
+Note that I didn't specify `x` in the `aes()` call for either point. This is because the geometries *inherit* the `x` mapping set in the `ggplot()` call. In this sense, ggplot is a *layered* grammar of graphics.
+
+### Guidelines
+
+There are a variety of "guideline" geometries we can use to annotate a plot. For instance, `geom_abline()` just draws a straight line, which is useful as a reference.
+
+```{r}
+ggplot(
+  data = mpg,
+  mapping = aes(x = hwy, y = cty)
+) +
+  geom_abline(intercept = 0, slope = 1) +
+  geom_point()
+```
+
+This shows us very cleanly that the `cty` of a car is always lower than its `hwy` fuel economy.
+
+We can also draw guidelines that are based on the data. The following code is a bit more sophisticated than what we've seen so far. However, it illustrates that we can draw a horizontal guidelines for each class of car based on its mean fuel economy.
+
+```{r}
+ggplot(
+  data = mpg,
+  mapping = aes(x = displ, y = hwy, color = class)
+) +
+  geom_hline(
+    data = mpg %>% 
+      group_by(class) %>% 
+      summarize(hwy = mean(hwy)),
+    mapping = aes(yintercept = hwy, color = class),
+    size = 1,
+    alpha = 1 / 3
+  ) +
+  geom_point()
+```
+
+
+# (EXERCISES)
+
+Try each of these on your own!
+
+### __q1__ Inspect the data
+
+Inspect the `diamonds` dataset. What do the `cut`, `color`, and `clarity` variables mean?
+
+*Hint* We learned how to inspect a dataset above.
+
+```{r q1-task}
+## TODO: Inspect the `diamonds` dataset here
+```
+
+
+Now that we have the list of variables in the dataset, we know what we can visualize!
+
+### __q2__ Make a bar chart
+
+Complete the code below to make a bar chart of the `cut` of each diamond. Answer the questions below.
+
+```{r q2-task}
+## TODO: Complete this code
+ggplot(
+  data = diamonds,
+  mapping = aes(x = cut)
+) # NOTE: Don't forget to add a `+` here!
+```
+
+*Observations*
+- Which `cut` is most common?
+  - (Write your response here)
+- Which `cut` is least common?
+  - (Write your response here)
+- `Ideal` cuts will tend to be more desirable, while `Fair` cuts will tend to be less desirable. Does their relative abundance in the dataset match your expectations?
+  - (Write your response here)
+
+
+### __q3__ Make a histogram
+
+Complete the following code to make a histogram of the `carat` variable.
+
+```{r q3-task}
+## TODO: Complete this code
+ggplot(
+  data = diamonds,
+)
+```
+
+*Hint*: You should see `carat` on the horizontal axis, and the range should go from about `0` to `5`.
+
+### __q4__ Make a targeted histogram
+
+The following code *filters* the dataset to only those rows where `carat <= 1.1`. Complete the code to make a histogram of the `carat` values. Answer the questions below.
+
+```{r q4-task}
+## TODO: Complete the following code
+ggplot(
+  data = diamonds %>% 
+    filter(carat <= 1.1),
+)
+```
+
+*Observations*
+- Compare the range of `carat` values shown in your plot for q4 to your plot for q3. What is different?
+  - (Write your response here)
+- How many "spikes" (especially high-count regions of `carat`) can you find in the histogram? *Hint* You will **need** to increase the number of `bins` to see all the spikes!
+  - (Write your response here)
+- Do the spikes tend to be symmetric around their highest value? Or do they "taper" to one side?
+  - (Write your response here)
+- What might be the reason for the shape of the spikes?
+  - (Write your response here)
+
+### __q5__ Make a scatterplot
+
+Using `ggplot`, make a scatterplot with `price` on the vertical axis and `carat` on the horizontal axis. Answer the questions below.
+
+```{r q5-task}
+## TODO: Complete this code
+ggplot(diamonds)
+```
+
+**Observations**:
+
+- (Write your observations here!)
+
+## A note on *aesthetics*
+
+The function `aes()` is short for *aesthetics*. Aesthetics in ggplot are the mapping of variables in a dataframe to visual elements in the graph. For instance, in the plot above you assigned `carat` to the `x` aesthetic, and `price` to the `y` aesthetic. But there are *many more* aesthetics you can set, some of which vary based on the `geom_` you are using to visualize. The next question will explore this idea more.
+
+### __q6__ Create a new graph to visualize `price`, `carat`, and `cut`
+simultaneously.
+
+*Hint*: Remember that you can add additional aesthetic mappings in `aes()`. Some options include `size`, `color`, and `shape`.
+
+```{r q6-task}
+## TODO: Complete this code
+ggplot(diamonds)
+```
+
+**Observations**:
+
+- (Write your observations here!)
+
+### A note on formatting & saving images
+
+At the end of DataFest, you will have to record a short video to present your work. Something you should *absolutely* do is ensure all of your data visualizations are clearly readable. To do this, you can use the `theme()` function to adjust the text size on your graph. You can also adjust the plot labels using `labs()`, and save your figure using `ggsave()`. The following code demonstrates how to do all of this: It will save the figure below to an image called `test_image.png`, which will be located in the same folder as this notebook.
+
+```{r}
+ggplot(diamonds) +
+  geom_point(aes(x = carat, y = price)) +
+  theme_minimal() +
+  theme(
+    axis.text = element_text(size = 12),
+    axis.title = element_text(size = 14)
+  ) +
+  labs(
+    x = "Carat",
+    y = "Price ($)"
+  )
+
+ggsave(
+  filename = "test_image.png",
+  bg = "white"
+)
+```
+
