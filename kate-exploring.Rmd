@@ -214,12 +214,28 @@ timesplit <-
 timesplit
 ```
 
+## Divorce Count per County
+
 ```{r}
+#str_detect(PostText, "[Ee]x[ -]")
 all_timesplit <-
-  all_time %>% 
-  filter(Subcategory == "Family/Divorce/Custody") %>% 
+  all_time %>%
+  mutate(cat = str_detect(Subcategory, "[Dd]ivorce")) %>% 
+  filter(cat == "TRUE") %>% 
   separate("Actual Time", into = c("year", "month", "day", "hour", "minutes", "seconds")) 
-all_timesplit
+
+div_county <- 
+  all_timesplit %>% 
+    group_by(county_fips, StateAbbr) %>% 
+    count(Subcategory) 
+
+div_county
+
+
+
+
+
+
 ```
 
 ```{r}
@@ -231,8 +247,12 @@ all_timesplit %>%
 ```
 
 ```{r}
-ALL_DATA <-
-  merge(big_data_1, df_attorney_data, by = c("AttorneyUno", "StateAbbr"))
 
-ALL_DATA
+```
+
+```{r}
+# ALL_DATA <-
+#   merge(big_data_1, df_attorney_data, by = c("AttorneyUno", "StateAbbr"))
+# 
+# ALL_DATA
 ```
