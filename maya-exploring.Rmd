@@ -40,18 +40,25 @@ df_pop_named <-
     col = `Geographic Area Name`,
     into = c("County", "state"),
     sep = (",") 
-    )
+  ) %>%
+  mutate_if(is.character, str_trim)
 
-df_pop_named
+# df_pop_named
 
 st_crosswalk <- tibble(state = state.name) %>%
    bind_cols(tibble(abb = state.abb)) %>% 
    bind_rows(tibble(state = "District of Columbia", abb = "DC"))
-st_crosswalk
+# st_crosswalk
  
-df_population <- full_join(df_pop_named, st_crosswalk, by = "state")
+df_population <- right_join(df_pop_named, st_crosswalk, by = "state")
+df_population <-
+  df_population %>% 
+  rename(StateAbbr = abb) %>%
+  rename(Population = `Estimate!!Total`)
+
 df_population
 ```
+
 
 ```{r}
 df_questionposts %>% 
@@ -118,7 +125,14 @@ big_data_1 <-
 ```
 
 ```{r}
-big_data_1 %>% 
+big_data_2 <-
+  merge(big_data_1, df_population, by = c("County", "StateAbbr"))
+
+
+```
+
+```{r}
+big_data_2 %>% 
   head()
 
 big_data_1 %>% 
@@ -126,8 +140,9 @@ big_data_1 %>%
   ggplot(aes(StateAbbr)) +
   geom_bar()
 
-df_client_state_data %>% 
-  count(StateAbbr) %>% 
+big_data_1 %>% 
+  filter((str_detect(Subcategory, "[Dd]ivorce"))) %>% 
+  count(Subcategory) %>% 
   arrange(desc(n))
 ```
 
