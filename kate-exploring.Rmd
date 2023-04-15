@@ -42,6 +42,8 @@ You can also embed plots, for example:
 df_attorneytimeentries %>%
   ggplot(aes(y = StateAbbr, x = Hours)) +
   geom_point()
+
+df_attorneytimeentries %>% count(StateAbbr)
 ```
 
 ```{r}
@@ -88,10 +90,10 @@ df_client_state_data
 
 ```{r}
 
-
-df_client_state_data <-
-  df_client_state_data %>%
-  rename(ClientCreatedUtc = CreatedUtc)
+# 
+# df_client_state_data <-
+#   df_client_state_data %>%
+#   rename(ClientCreatedUtc = CreatedUtc)
 ```
 
 ```{r}
@@ -186,9 +188,12 @@ honolulu["Actual Time"] = strftime(date, format = "%Y/%m/%d %H:%M:%S", tz = "Pac
 honolulu
 ```
 
+## Time Zone Merge
+
 ```{r}
 all_time <-
   full_join(chicago, denver) %>% 
+
   full_join(detroit) %>% 
   full_join(ny) %>% 
   full_join(la) %>% 
@@ -209,19 +214,62 @@ timesplit <-
 timesplit
 ```
 
+## Divorce Count per County
+
 ```{r}
+#str_detect(PostText, "[Ee]x[ -]")
 all_timesplit <-
-  all_time %>% 
-  filter(Subcategory == "Family/Divorce/Custody") %>% 
-  separate("Actual Time", into = c("year", "month", "day", "hour", "minutes", "seconds")) %>% 
-  ggplot(mapping = aes(hour)) +
-  geom_bar()
+  all_time %>%
+  mutate(cat = str_detect(Subcategory, "[Dd]ivorce")) %>% 
+  filter(cat == "TRUE") %>% 
+  separate("Actual Time", into = c("year", "month", "day", "hour", "minutes", "seconds")) 
+
 all_timesplit
 ```
 
 ```{r}
-ALL_DATA <-
-  merge(big_data_1, df_attorney_data, by = c("AttorneyUno", "StateAbbr"))
 
-ALL_DATA
+div_county <- 
+  all_timesplit %>% 
+    group_by(county_fips, StateAbbr) %>% 
+    count(Subcategory) 
+
+div_county
+
+div_dem <- 
+   all_timesplit %>% 
+    # group_by(county_fips, StateAbbr) %>% 
+    select(c(county_fips, StateAbbr, EthnicIdentity, Age, Gender, MaritalStatus)) %>% 
+  group_by(StateAbbr) %>% 
+  count(EthnicIdentity) %>% 
+  arrange(desc(n))
+
+div_dem_fl <- 
+  div_dem %>% 
+    mutate(other = str_detect(EthnicIdentity, "[Oo]ther"),
+           multi = str_detect(EthnicIdentity, ",")) %>% 
+    filter(StateAbbr == "FL")
+  
+
+```
+
+```{r}
+all_timesplit %>% 
+  group_by(hour, StateAbbr) %>% 
+  count(hour) %>% 
+  ggplot(mapping = aes(hour, n, color = StateAbbr)) +
+  geom_point()
+```
+
+```{r}
+div_dem_fl %>% 
+  ggplot(mapping = aes(n, EthnicIdentity)) +
+    geom_point()
+```
+
+```{r}
+# ALL_DATA <-
+#   merge(big_data_1, df_attorney_data, by = c("AttorneyUno", "StateAbbr"))
+# 
+# ALL_DATA
 ```
