@@ -25,6 +25,13 @@ df_questionposts <- read_csv("./data/questionposts.csv")
 df_questions <- read_csv("./data/questions.csv")
 df_statesites <- read_csv("./data/statesites.csv")
 df_subcategories <- read_csv("./data/subcategories.csv")
+
+```
+
+```{r}
+df_zip <- read_csv("./uszips.csv") %>%
+  rename(PostalCode = zip)
+df_zip
 ```
 
 ## Including Plots
@@ -49,7 +56,7 @@ df_attorney_data
 ```{r}
 df_question_data <-
   merge(df_questions, df_questionposts, by = c("QuestionUno", "StateAbbr")) %>%
-  subset(select = -c(Id.x, Id.y, CategoryUno, SubcategoryUno, AskedOnUtc, TakenOnUtc, ClosedOnUtc, LegalDeadline, CreatedUtc))
+  subset(select = -c(Id.x, Id.y, CategoryUno, SubcategoryUno, TakenOnUtc, ClosedOnUtc, LegalDeadline, CreatedUtc))
 
 df_question_data <-
   df_question_data %>%
@@ -70,13 +77,15 @@ df_categories_data <-
 
 df_categories_data
 ```
+
 ```{r}
 df_client_state_data <-
   merge(df_clients, df_statesites, by = c("StateAbbr", "StateName")) %>%
-  subset(select = -c(Id.x, Id.y, PostalCode, CreatedUtc))
+  subset(select = -c(Id.x, Id.y, CreatedUtc))
 
 df_client_state_data
 ```
+
 ```{r}
 
 
@@ -84,7 +93,6 @@ df_client_state_data <-
   df_client_state_data %>%
   rename(ClientCreatedUtc = CreatedUtc)
 ```
-
 
 ```{r}
 big_data_1 <-
@@ -94,6 +102,25 @@ big_data_1 <-
 big_data_1
 ```
 
+```{r}
+df_zip_tz <-
+  left_join(big_data_1, df_zip, by=("PostalCode"))
+df_zip_tz
+
+df_sum_tz <-
+  df_zip_tz %>% 
+  summarise(PostalCode, timezone)
+df_sum_tz
+
+df_sum_tz_unique = df_sum_tz[!duplicated(df_sum_tz), ]
+df_sum_tz_unique
+```
+
+```{r}
+library(lubridate)
+date = force_tzs(df_zip_tz$AskedOnUtc, tzones = "UTC")
+strftime(date, format = "%Y/%m/%d %H:%M:%S", tz = "America/Chicago" )
+```
 
 ```{r}
 ALL_DATA <-
@@ -101,4 +128,3 @@ ALL_DATA <-
 
 ALL_DATA
 ```
-
