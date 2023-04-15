@@ -36,6 +36,7 @@ df_attorneytimeentries %>%
   ggplot(aes(y = StateAbbr, x = Hours)) +
   geom_point()
 ```
+
 ```{r}
 df_attorney_data <-
   merge(df_attorneys, df_attorneytimeentries, by = c("AttorneyUno", "StateAbbr"))
@@ -54,3 +55,14 @@ df_question_data <-
 df_question_data
 ```
 
+```{r total time}
+
+df_time_per_state <- df_attorney_data %>% 
+  group_by(StateAbbr) %>% 
+  summarise(total_hours = sum(Hours), average_hours = mean(Hours))
+
+df_time_per_state %>% 
+ggplot() +
+  geom_point(aes(StateAbbr, average_hours))
+  
+```
