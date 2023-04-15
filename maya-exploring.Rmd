@@ -119,15 +119,15 @@ summary(df_question_data)
 ```
 
 ```{r}
-big_data_1 <-
-  merge(df_question_data, df_client_state_data, by = c("ClientUno", "StateAbbr")) %>%
-  subset(select = -c(ClientUno, QuestionUno, StateName))
+# big_data_1 <-
+#   merge(df_question_data, df_client_state_data, by = c("ClientUno", "StateAbbr")) %>%
+#   subset(select = -c(QuestionUno, StateName))
 ```
 
 
 ```{r}
 df_state_count <-
-  big_data_1 %>% 
+  big_data_1_wide %>% 
   filter((str_detect(Subcategory, "[Dd]ivorce"))) %>%
   count(StateAbbr)
 
@@ -199,4 +199,64 @@ q_count_state_entries %>%
 #   count(Subcategory) %>% 
 #   arrange(desc(n))
 ```
+```{r}
+# big_data_1_wide
+df_question_data <-
+  merge(df_questions, df_questionposts, by = c("QuestionUno", "StateAbbr")) %>%
+  subset(select = -c(Id.x, Id.y, CategoryUno, SubcategoryUno, TakenOnUtc, ClosedOnUtc, LegalDeadline))
 
+df_question_data <-
+  df_question_data %>%
+  rename(ClientUno = AskedByClientUno)
+
+df_question_data <-
+  df_question_data %>%
+  rename(AttorneyUno = TakenByAttorneyUno)
+
+df_question_data
+
+df_categories_data <-
+  merge(df_categories, df_subcategories, by = c("CategoryUno", "StateAbbr")) %>%
+  subset(select = -c(Id.x, Id.y))
+
+
+df_categories_data
+
+df_client_state_data <-
+  merge(df_clients, df_statesites, by = c("StateAbbr", "StateName")) %>%
+  subset(select = -c(Id.x, Id.y))
+
+df_client_state_data
+
+
+df_client_state_data <-
+  df_client_state_data %>%
+  rename(ClientCreatedUtc = CreatedUtc)
+
+
+
+big_data_1_wide <-
+  merge(df_question_data, df_client_state_data, by = c("ClientUno", "StateAbbr")) %>%
+  subset(select = -c(QuestionUno, StateName))
+
+big_data_1_wide
+```
+
+
+
+```{r}
+
+client_first_posts <-
+  big_data_1_wide %>%
+    filter((str_detect(Subcategory, "[Dd]ivorce"))) %>%
+    arrange(desc(CreatedUtc)) %>%
+    group_by(ClientUno) %>%
+    slice(1) %>%
+    arrange(desc(CreatedUtc)) %>%
+    select(CreatedUtc, ClientUno, StateAbbr, PostText, AttorneyUno, ClosedByAttorneyUno)
+
+client_first_posts
+
+# big_data_1_wide %>%  
+#   filter((str_detect(Subcategory, "[Dd]ivorce")))
+```
