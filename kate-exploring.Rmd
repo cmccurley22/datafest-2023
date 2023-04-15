@@ -320,9 +320,58 @@ write.csv(big_data_1, "C:\\Users\\ldao\\Downloads\\text.csv", row.names=FALSE)
 ```{r}
 text_data <-
   big_data_1 %>% 
-  mutate(cat = str_detect(PostText, "[Dd]ivorce|[Aa]limony|[Ss]ep[ea]rat| [Ee]x |[Pp]renup|[Cc]hild [Ss]upport|[Cc]ustody")) %>% 
+  mutate(cat = str_detect(PostText, "[Dd]ivorce|[Aa]limony|[Ss]ep[ea]ratio|[Ss]ep[ea]rated| [Ee]x |[Pp]renup|[Cc]hild [Ss]upport|[Cc]ustody")) %>% 
   filter(cat == "TRUE") %>% 
   summarise(PostText, ClientUno)
 text_data
 write.csv(text_data, "C:\\Users\\ldao\\Downloads\\keyword_aba.csv")
+```
+
+```{r}
+post_text <-
+  text_data %>% 
+  summarise(PostText)
+
+post_text_trim <-
+  post_text %>% 
+  head(200)
+post_text_trim
+
+library("stopwords")
+library("wordcloud")
+library(readr)
+library(e1071)
+library(mlbench)
+library(tm)
+library(SnowballC)
+library("wordcloud")
+library("RColorBrewer")
+
+#library("tidytext")
+
+
+corpus = Corpus(VectorSource(post_text_trim$PostText))
+#Conversion to Lowercase
+corpus = tm_map(corpus, PlainTextDocument)
+corpus = tm_map(corpus, tolower)
+ 
+#Removing Punctuation
+corpus = tm_map(corpus, removePunctuation)
+ 
+#Remove stopwords
+corpus = tm_map(corpus, removeWords, c("cloth", stopwords("english")))
+ 
+# Eliminate white spaces
+corpus = tm_map(corpus, stripWhitespace)
+
+DTM <- TermDocumentMatrix(corpus)
+mat <- as.matrix(DTM)
+f <- sort(rowSums(mat),decreasing=TRUE)
+dat <- data.frame(word = names(f),freq=f)
+head(dat, 5)
+```
+
+```{r}
+set.seed(100)
+wordcloud(words = dat$word, freq = dat$freq, , min.freq = 15, max.words=120, random.order=TRUE, scale = c(4, .25), colors=brewer.pal(8, "Set2"))
 ```
