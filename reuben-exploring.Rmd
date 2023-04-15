@@ -9,6 +9,7 @@ library(tidyverse)
 library(urbnmapr)
 library(urbnthemes)
 library(sf)
+require(gridExtra)
 # knitr options
 knitr::opts_chunk$set(echo = TRUE)
 set_urbn_defaults(style = "map")
@@ -41,4 +42,28 @@ div_state %>%
   coord_sf(datum = NA) +
   scale_fill_gradient(low = "blue", high = "red", na.value = NA, trans = "log") +
   labs(fill = "Count")
+```
+
+```{r}
+plot1 <-
+  q_count_state_entries %>% 
+  rename("state_abbv" = "StateAbbr") %>% 
+  left_join(states_sf, by = "state_abbv") %>% 
+  st_as_sf(sf_column_name = "geometry") %>% 
+  ggplot() +
+  geom_sf(mapping = aes(fill = norm_count), color = "white", size = 0.05) +
+  coord_sf(datum = NA) +
+  scale_fill_gradient(low = "pink", high = "blue", na.value = NA) +
+  labs(fill = "Count", subtitle = "Normalized to number of state entries", title = "Divorce Related Cases")
+plot2 <-
+  q_count_state_pop %>% 
+  rename("state_abbv" = "StateAbbr") %>% 
+  left_join(states_sf, by = "state_abbv") %>% 
+  st_as_sf(sf_column_name = "geometry") %>% 
+  ggplot() +
+  geom_sf(mapping = aes(fill = norm_count), color = "white", size = 0.05) +
+  coord_sf(datum = NA) +
+  scale_fill_gradient(low = "pink", high = "blue", na.value = NA) +
+  labs(fill = "Count", subtitle = "Normalized to state population")
+grid.arrange(plot1, plot2, ncol=2)
 ```
