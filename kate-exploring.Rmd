@@ -118,8 +118,105 @@ df_sum_tz_unique
 
 ```{r}
 library(lubridate)
-date = force_tzs(df_zip_tz$AskedOnUtc, tzones = "UTC")
-strftime(date, format = "%Y/%m/%d %H:%M:%S", tz = "America/Chicago" )
+library(timechange)
+```
+
+```{r}
+chicago <-
+  df_zip_tz %>% 
+  filter(timezone == "America/Chicago")
+date = force_tzs(chicago$AskedOnUtc, tzones = "UTC")
+chicago["Actual Time"] = strftime(date, format = "%Y/%m/%d %H:%M:%S", tz = "America/Chicago")
+chicago
+
+indiana <-
+  df_zip_tz %>% 
+  filter(timezone == "America/Indiana/Indianapolis")
+date = force_tzs(indiana$AskedOnUtc, tzones = "UTC")
+indiana["Actual Time"] = strftime(date, format = "%Y/%m/%d %H:%M:%S", tz = "America/Indiana/Indianapolis")
+indiana
+
+la <-
+  df_zip_tz %>% 
+  filter(timezone == "America/Los_Angeles")
+date = force_tzs(la$AskedOnUtc, tzones = "UTC")
+la["Actual Time"] = strftime(date, format = "%Y/%m/%d %H:%M:%S", tz = "America/Los_Angeles")
+la
+
+detroit <-
+  df_zip_tz %>% 
+  filter(timezone == "America/Detroit")
+date = force_tzs(detroit$AskedOnUtc, tzones = "UTC")
+detroit["Actual Time"] = strftime(date, format = "%Y/%m/%d %H:%M:%S", tz = "America/Detroit")
+detroit
+
+ny <-
+  df_zip_tz %>% 
+  filter(timezone == "America/New_York")
+date = force_tzs(ny$AskedOnUtc, tzones = "UTC")
+ny["Actual Time"] = strftime(date, format = "%Y/%m/%d %H:%M:%S", tz = "America/New_York")
+ny
+
+denver <-
+  df_zip_tz %>% 
+  filter(timezone == "America/New_York")
+date = force_tzs(denver$AskedOnUtc, tzones = "UTC")
+denver["Actual Time"] = strftime(date, format = "%Y/%m/%d %H:%M:%S", tz = "America/Denver")
+denver
+
+phoenix <-
+  df_zip_tz %>% 
+  filter(timezone == "America/Phoenix")
+date = force_tzs(phoenix$AskedOnUtc, tzones = "UTC")
+phoenix["Actual Time"] = strftime(date, format = "%Y/%m/%d %H:%M:%S", tz = "America/Phoenix")
+phoenix
+
+toronto <-
+  df_zip_tz %>% 
+  filter(timezone == "America/Toronto")
+date = force_tzs(toronto$AskedOnUtc, tzones = "UTC")
+toronto["Actual Time"] = strftime(date, format = "%Y/%m/%d %H:%M:%S", tz = "America/Toronto")
+toronto
+
+honolulu <-
+  df_zip_tz %>% 
+  filter(timezone == "Pacific/Honolulu")
+date = force_tzs(honolulu$AskedOnUtc, tzones = "UTC")
+honolulu["Actual Time"] = strftime(date, format = "%Y/%m/%d %H:%M:%S", tz = "Pacific/Honolulu")
+honolulu
+```
+
+```{r}
+all_time <-
+  full_join(chicago, denver) %>% 
+  full_join(detroit) %>% 
+  full_join(ny) %>% 
+  full_join(la) %>% 
+  full_join(toronto) %>% 
+  full_join(honolulu) %>%
+  full_join(phoenix) %>% 
+  full_join(indiana)
+all_time
+```
+
+```{r}
+library(tidyr)
+timesplit <-
+  indiana %>%
+  separate("Actual Time", into = c("year", "month", "day", "hour", "minutes", "seconds")) %>% 
+  ggplot(mapping = aes(hour)) +
+  geom_bar()
+timesplit
+```
+
+```{r}
+all_timesplit <-
+  all_time %>% 
+  filter(Subcategory == "Family/Divorce/Custody") %>% 
+  separate("Actual Time", into = c("year", "month", "day", "hour", "minutes", "seconds")) %>% 
+  ggplot(mapping = aes(hour)) +
+  geom_bar()
+all_timesplit
 ```
 
 ```{r}
