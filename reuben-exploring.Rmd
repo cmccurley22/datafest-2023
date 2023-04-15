@@ -8,6 +8,7 @@ date: "2023-04-14"
 library(tidyverse)
 library(urbnmapr)
 library(urbnthemes)
+library(sf)
 # knitr options
 knitr::opts_chunk$set(echo = TRUE)
 set_urbn_defaults(style = "map")
@@ -22,8 +23,22 @@ div_county_geo <- left_join(counties_sf, div_county, by = "county_fips")
 div_county_geo %>%
   filter(state_name == "Florida") %>%
   ggplot() +
-    geom_sf(mapping = aes(fill = n), color = "#ffffff", size = 0.05) +
-    coord_sf(datum = NA) +
-  scale_fill_gradient(trans = "log", low = "blue", high = "red", na.value = NA) +
+  geom_sf(mapping = aes(fill = n), color = "#ffffff", size = 0.05) +
+  coord_sf(datum = NA) +
+  scale_fill_gradient(low = "blue", high = "red", na.value = NA, trans = "log") +
+  labs(fill = "Count")
+div_state <- 
+  div_county %>% 
+  group_by(StateAbbr) %>% 
+  summarise(count = sum(n), na.rm = TRUE) %>% 
+  rename("state_abbv" = "StateAbbr") %>% 
+  left_join(states_sf, by = "state_abbv") %>% 
+  st_as_sf(sf_column_name = "geometry")
+
+div_state %>% 
+  ggplot() +
+  geom_sf(mapping = aes(fill = count), color = "white", size = 0.05) +
+  coord_sf(datum = NA) +
+  scale_fill_gradient(low = "blue", high = "red", na.value = NA, trans = "log") +
   labs(fill = "Count")
 ```
