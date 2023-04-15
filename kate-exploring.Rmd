@@ -249,6 +249,15 @@ div_dem_fl <-
     mutate(other = str_detect(EthnicIdentity, "[Oo]ther"),
            multi = str_detect(EthnicIdentity, ",")) %>% 
     filter(StateAbbr == "FL")
+
+div_ag <- 
+  all_timesplit %>% 
+  select(c(county_fips, StateAbbr, Age, Gender, MaritalStatus)) %>%
+    group_by(StateAbbr) %>% 
+    count(Gender) %>% 
+    arrange(desc(n))
+
+div_ag
   
 
 ```
@@ -263,7 +272,7 @@ all_timesplit %>%
 
 ```{r}
 div_dem_fl %>% 
-  ggplot(mapping = aes(n, EthnicIdentity)) +
+  ggplot(mapping = aes(n)) +
     geom_point()
 ```
 
