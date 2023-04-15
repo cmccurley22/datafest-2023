@@ -60,6 +60,15 @@ st_crosswalk <- tibble(state = state.name) %>%
 # st_crosswalk
  
 df_population <- right_join(df_pop_named, st_crosswalk, by = "state")
+
+df_pop_fips <- df_population %>% 
+  mutate(
+    county_fips = str_sub(id, start = -5)
+  )
+```
+
+```{r}
+df_pop_fips
 ```
 
 ## Including Plots
@@ -127,7 +136,7 @@ df_client_state_data
 ```{r}
 big_data_1 <-
   merge(df_question_data, df_client_state_data, by = c("ClientUno", "StateAbbr")) %>%
-  subset(select = -c(QuestionUno, StateName))
+  subset(select = -c(ClientUno, QuestionUno, StateName))
 
 big_data_1
 ```
@@ -307,22 +316,24 @@ div_ag %>%
 ```
 
 ```{r}
-# ALL_DATA <-
+df_comb_pop <- right_join(df_pop_fips, all_time, by = "county_fips")
+
+df_comb_time <- 
+  df_comb_pop %>% 
+  mutate(cat = str_detect(Subcategory, "[Dd]ivorce")) %>% 
+  filter(cat == "TRUE") %>% 
+  separate("Actual Time", into = c("year", "month", "day", "hour", "minutes", "seconds")) 
+
+df_comb_time
+  
+```
+
+```{r}
+
+```
+
+```{# ALL_DATA <-}
 #   merge(big_data_1, df_attorney_data, by = c("AttorneyUno", "StateAbbr"))
 # 
 # ALL_DATA
-```
-
-```{r}
-write.csv(big_data_1, "C:\\Users\\ldao\\Downloads\\text.csv", row.names=FALSE)
-```
-
-```{r}
-text_data <-
-  big_data_1 %>% 
-  mutate(cat = str_detect(PostText, "[Dd]ivorce|[Aa]limony|[Ss]ep[ea]rat| [Ee]x |[Pp]renup|[Cc]hild [Ss]upport|[Cc]ustody")) %>% 
-  filter(cat == "TRUE") %>% 
-  summarise(PostText, ClientUno)
-text_data
-write.csv(text_data, "C:\\Users\\ldao\\Downloads\\keyword_aba.csv")
 ```
