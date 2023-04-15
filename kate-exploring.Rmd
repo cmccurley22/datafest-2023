@@ -47,6 +47,10 @@ df_attorney_data
 ```
 
 ```{r}
+df_question_data <-
+  merge(df_questions, df_questionposts, by = c("QuestionUno", "StateAbbr")) %>%
+  subset(select = -c(Id.x, Id.y))
 
+df_question_data
 ```
 
