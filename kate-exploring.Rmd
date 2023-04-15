@@ -61,4 +61,11 @@ df_categories_data <-
 
 df_categories_data
 ```
+```{r}
+df_client_state_data <-
+  merge(df_clients, df_statesites, by = c("StateAbbr", "StateName")) %>%
+  subset(select = -c(Id.x, Id.y))
+
+df_client_state_data
+```
 
