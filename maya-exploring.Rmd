@@ -43,16 +43,16 @@ df_pop_named <-
   ) %>%
   mutate_if(is.character, str_trim)
 
-# df_pop_named
+df_pop_named
 
 st_crosswalk <- tibble(state = state.name) %>%
    bind_cols(tibble(abb = state.abb)) %>% 
    bind_rows(tibble(state = "District of Columbia", abb = "DC"))
-# st_crosswalk
+st_crosswalk
  
 df_population <- right_join(df_pop_named, st_crosswalk, by = "state")
 df_population <-
-  df_population %>% 
+  df_population %>%
   rename(StateAbbr = abb) %>%
   rename(Population = `Estimate!!Total`)
 
@@ -124,25 +124,79 @@ big_data_1 <-
   subset(select = -c(ClientUno, QuestionUno, StateName))
 ```
 
-```{r}
-big_data_2 <-
-  merge(big_data_1, df_population, by = c("County", "StateAbbr"))
-
-
-```
 
 ```{r}
-big_data_2 %>% 
-  head()
+df_state_count <-
+  big_data_1 %>% 
+  filter((str_detect(Subcategory, "[Dd]ivorce"))) %>%
+  count(StateAbbr)
 
-big_data_1 %>% 
-  filter(Subcategory == "Family/Divorce/Custody") %>% 
+State_pop_simp <-
+  df_population %>% 
+  select(c("StateAbbr", "Population"))
+
+state_pop_total <- 
+  state_pop %>%
+  group_by(StateAbbr) %>%
+  summarize(
+    total_pop = sum(Population)
+  )
+
+q_count_state_pop <- inner_join(df_state_count, state_pop_total, by = "StateAbbr")
+
+q_count_state_pop <-
+  q_count_state_pop %>% 
+  mutate(
+    norm_count = n/total_pop
+  )
+
+
+
+entries_from_States <-
+  big_data_1 %>% 
+  count(StateAbbr) %>% 
+  rename(entries = n)
+
+q_count_state_entries <- inner_join(df_state_count, entries_from_States, by = "StateAbbr")
+
+q_count_state_entries <-
+  q_count_state_entries %>%
+  mutate(
+    norm_count = n/entries
+  )
+  
+
+
+# big_data_1 %>% 
+#   filter(Subcategory == "Family/Divorce/Custody") %>% 
+#   ggplot(aes(StateAbbr)) +
+#   geom_bar()
+
+big_data_1 %>%
+  filter((str_detect(Subcategory, "[Dd]ivorce"))) %>%
   ggplot(aes(StateAbbr)) +
-  geom_bar()
+  geom_bar() +
+  labs(
+    title = "'Divorce' related posts by State"
+  )
 
-big_data_1 %>% 
-  filter((str_detect(Subcategory, "[Dd]ivorce"))) %>% 
-  count(Subcategory) %>% 
-  arrange(desc(n))
+q_count_state_pop %>% 
+  ggplot(aes(StateAbbr, norm_count)) +
+  geom_col() +
+  labs(
+    title = "Normalized by Pop"
+  )
+
+q_count_state_entries %>% 
+  ggplot(aes(StateAbbr, norm_count)) +
+  geom_col() +
+  labs(
+    title = "Normalized by Entries"
+  )
+
+# big_data_1 %>% 
+#   filter((str_detect(Subcategory, "[Dd]ivorce"))) %>% 
+#   count(Subcategory) %>% 
+#   arrange(desc(n))
 ```
 
