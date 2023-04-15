@@ -19,28 +19,28 @@ set_urbn_defaults(style = "map")
 counties_sf <- get_urbn_map(map = "counties", sf = TRUE)
 states_sf <- get_urbn_map("states", sf = TRUE)
 
-div_county_geo <- left_join(counties_sf, div_county, by = "county_fips")
+div_county_geo <- full_join(counties_sf, div_county, by = "county_fips")
 
 div_county_geo %>%
   filter(state_name == "Florida") %>%
   ggplot() +
   geom_sf(mapping = aes(fill = n), color = "#ffffff", size = 0.05) +
   coord_sf(datum = NA) +
-  scale_fill_gradient(low = "blue", high = "red", na.value = NA, trans = "log") +
+  scale_fill_gradient(low = "blue", high = "red", na.value = "grey", trans = "log") +
   labs(fill = "Count")
 div_state <- 
   div_county %>% 
   group_by(StateAbbr) %>% 
   summarise(count = sum(n), na.rm = TRUE) %>% 
   rename("state_abbv" = "StateAbbr") %>% 
-  left_join(states_sf, by = "state_abbv") %>% 
+  full_join(states_sf, by = "state_abbv") %>% 
   st_as_sf(sf_column_name = "geometry")
 
 div_state %>% 
   ggplot() +
   geom_sf(mapping = aes(fill = count), color = "white", size = 0.05) +
   coord_sf(datum = NA) +
-  scale_fill_gradient(low = "blue", high = "red", na.value = NA, trans = "log") +
+  scale_fill_gradient(low = "blue", high = "red", na.value = "grey", trans = "log") +
   labs(fill = "Count")
 ```
 
@@ -48,22 +48,22 @@ div_state %>%
 plot1 <-
   q_count_state_entries %>% 
   rename("state_abbv" = "StateAbbr") %>% 
-  left_join(states_sf, by = "state_abbv") %>% 
+  full_join(states_sf, by = "state_abbv") %>% 
   st_as_sf(sf_column_name = "geometry") %>% 
   ggplot() +
   geom_sf(mapping = aes(fill = norm_count), color = "white", size = 0.05) +
   coord_sf(datum = NA) +
-  scale_fill_gradient(low = "pink", high = "blue", na.value = NA) +
+  scale_fill_gradient(low = "pink", high = "blue", na.value = "grey") +
   labs(fill = "Count", subtitle = "Normalized to number of state entries", title = "Divorce Related Cases")
 plot2 <-
   q_count_state_pop %>% 
   rename("state_abbv" = "StateAbbr") %>% 
-  left_join(states_sf, by = "state_abbv") %>% 
+  full_join(states_sf, by = "state_abbv") %>% 
   st_as_sf(sf_column_name = "geometry") %>% 
   ggplot() +
   geom_sf(mapping = aes(fill = norm_count), color = "white", size = 0.05) +
   coord_sf(datum = NA) +
-  scale_fill_gradient(low = "pink", high = "blue", na.value = NA) +
+  scale_fill_gradient(low = "pink", high = "blue", na.value = "grey") +
   labs(fill = "Count", subtitle = "Normalized to state population")
 grid.arrange(plot1, plot2, ncol=2)
 ```
