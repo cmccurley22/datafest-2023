@@ -99,7 +99,7 @@ df_client_state_data
 ```{r}
 big_data_1 <-
   merge(df_question_data, df_client_state_data, by = c("ClientUno", "StateAbbr")) %>%
-  subset(select = -c(ClientUno, QuestionUno, StateName))
+  subset(select = -c(QuestionUno, StateName))
 
 big_data_1
 ```
@@ -272,4 +272,18 @@ div_dem_fl %>%
 #   merge(big_data_1, df_attorney_data, by = c("AttorneyUno", "StateAbbr"))
 # 
 # ALL_DATA
+```
+
+```{r}
+write.csv(big_data_1, "C:\\Users\\ldao\\Downloads\\text.csv", row.names=FALSE)
+```
+
+```{r}
+text_data <-
+  big_data_1 %>% 
+  mutate(cat = str_detect(PostText, "[Dd]ivorce|[Aa]limony|[Ss]ep[ea]rat| [Ee]x |[Pp]renup|[Cc]hild [Ss]upport|[Cc]ustody")) %>% 
+  filter(cat == "TRUE") %>% 
+  summarise(PostText, ClientUno)
+text_data
+write.csv(text_data, "C:\\Users\\ldao\\Downloads\\keyword_aba.csv")
 ```
