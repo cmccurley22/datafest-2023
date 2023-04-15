@@ -2,6 +2,8 @@
 title: "kate-exploring"
 output: github_document
 date: "2023-04-14"
+editor_options: 
+  chunk_output_type: inline
 ---
 
 ```{r setup, include=FALSE}
@@ -60,5 +62,44 @@ df_categories_data <-
   subset(select = -c(Id.x, Id.y))
 
 
-df_categories_data
+df_categories_data %>% count(Category)
+
+
+```
+
+```{r}
+df_client_state_data <-
+  merge(df_clients, df_statesites, by = c("StateAbbr", "StateName")) %>%
+  subset(select = -c(Id.x, Id.y))
+
+df_client_state_data
+```
+
+```{r}
+# df_q_cond <- 
+#   df_question_data %>% 
+#   select(StateAbbr, PostText)
+# 
+# df_q_cond
+
+
+df_post_sent <-
+ df_question_data %>% 
+  mutate(
+    ex = str_detect(PostText, "[Ee]x[ -]"),
+  ) %>% 
+  select(StateAbbr, ex, PostText)
+
+df_ex <-
+  df_post_sent %>% 
+   filter(ex == "TRUE")
+
+# print.data.frame(df_ex)
+ex_count <-
+  df_ex %>% 
+    count(StateAbbr) %>% 
+    arrange(desc(n)) 
+
+ex_count
+ 
 ```
