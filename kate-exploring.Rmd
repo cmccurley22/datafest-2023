@@ -34,6 +34,34 @@ df_zip <- read_csv("./uszips.csv") %>%
 df_zip
 ```
 
+## Population Data
+
+```{r}
+df_pop_in <- read_csv("./data/ACSDT5Y2019.B01003-Data.csv", skip = 1)
+
+
+df_pop_narrow <- select(df_pop_in, c("Geography", "Geographic Area Name", "Estimate!!Total"))
+
+df_pop_named <-
+  df_pop_narrow %>% 
+  rename(id = Geography) %>% 
+  separate(
+    col = `Geographic Area Name`,
+    into = c("County", "state"),
+    sep = (",") 
+  ) %>%
+  mutate_if(is.character, str_trim)
+
+# df_pop_named
+
+st_crosswalk <- tibble(state = state.name) %>%
+   bind_cols(tibble(abb = state.abb)) %>% 
+   bind_rows(tibble(state = "District of Columbia", abb = "DC"))
+# st_crosswalk
+ 
+df_population <- right_join(df_pop_named, st_crosswalk, by = "state")
+```
+
 ## Including Plots
 
 You can also embed plots, for example:
@@ -223,7 +251,7 @@ all_timesplit <-
   mutate(cat = str_detect(Subcategory, "[Dd]ivorce")) %>% 
   filter(cat == "TRUE") %>% 
   separate("Actual Time", into = c("year", "month", "day", "hour", "minutes", "seconds")) 
-
+ 
 all_timesplit
 ```
 
@@ -249,6 +277,15 @@ div_dem_fl <-
     mutate(other = str_detect(EthnicIdentity, "[Oo]ther"),
            multi = str_detect(EthnicIdentity, ",")) %>% 
     filter(StateAbbr == "FL")
+
+div_ag <- 
+  all_timesplit %>% 
+  select(c(county_fips, StateAbbr, Age, Gender, MaritalStatus)) %>%
+    group_by(StateAbbr) %>% 
+    count(Gender) %>% 
+    arrange(desc(n))
+
+div_ag
   
 
 ```
@@ -261,9 +298,11 @@ all_timesplit %>%
   geom_point()
 ```
 
+## Age vs Number of Posts about Divorce etc.
+
 ```{r}
-div_dem_fl %>% 
-  ggplot(mapping = aes(n, EthnicIdentity)) +
+div_ag %>% 
+  ggplot(mapping = aes(n, StateAbbr, color = Gender)) +
     geom_point()
 ```
 
