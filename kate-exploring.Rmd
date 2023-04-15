@@ -25,6 +25,13 @@ df_questionposts <- read_csv("./data/questionposts.csv")
 df_questions <- read_csv("./data/questions.csv")
 df_statesites <- read_csv("./data/statesites.csv")
 df_subcategories <- read_csv("./data/subcategories.csv")
+
+```
+
+```{r}
+df_zip <- read_csv("./uszips.csv") %>%
+  rename(PostalCode = zip)
+df_zip
 ```
 
 ## Including Plots
@@ -35,6 +42,8 @@ You can also embed plots, for example:
 df_attorneytimeentries %>%
   ggplot(aes(y = StateAbbr, x = Hours)) +
   geom_point()
+
+df_attorneytimeentries %>% count(StateAbbr)
 ```
 
 ```{r}
@@ -49,7 +58,7 @@ df_attorney_data
 ```{r}
 df_question_data <-
   merge(df_questions, df_questionposts, by = c("QuestionUno", "StateAbbr")) %>%
-  subset(select = -c(Id.x, Id.y, CategoryUno, SubcategoryUno, AskedOnUtc, TakenOnUtc, ClosedOnUtc, LegalDeadline, CreatedUtc))
+  subset(select = -c(Id.x, Id.y, CategoryUno, SubcategoryUno, TakenOnUtc, ClosedOnUtc, LegalDeadline, CreatedUtc))
 
 df_question_data <-
   df_question_data %>%
@@ -70,21 +79,22 @@ df_categories_data <-
 
 df_categories_data
 ```
+
 ```{r}
 df_client_state_data <-
   merge(df_clients, df_statesites, by = c("StateAbbr", "StateName")) %>%
-  subset(select = -c(Id.x, Id.y, PostalCode, CreatedUtc))
+  subset(select = -c(Id.x, Id.y, CreatedUtc))
 
 df_client_state_data
 ```
+
 ```{r}
 
-
-df_client_state_data <-
-  df_client_state_data %>%
-  rename(ClientCreatedUtc = CreatedUtc)
+# 
+# df_client_state_data <-
+#   df_client_state_data %>%
+#   rename(ClientCreatedUtc = CreatedUtc)
 ```
-
 
 ```{r}
 big_data_1 <-
@@ -94,11 +104,172 @@ big_data_1 <-
 big_data_1
 ```
 
-
 ```{r}
-ALL_DATA <-
-  merge(big_data_1, df_attorney_data, by = c("AttorneyUno", "StateAbbr"))
+df_zip_tz <-
+  left_join(big_data_1, df_zip, by=("PostalCode"))
+df_zip_tz
 
-ALL_DATA
+df_sum_tz <-
+  df_zip_tz %>% 
+  summarise(PostalCode, timezone)
+df_sum_tz
+
+df_sum_tz_unique = df_sum_tz[!duplicated(df_sum_tz), ]
+df_sum_tz_unique
 ```
 
+```{r}
+library(lubridate)
+library(timechange)
+```
+
+```{r}
+chicago <-
+  df_zip_tz %>% 
+  filter(timezone == "America/Chicago")
+date = force_tzs(chicago$AskedOnUtc, tzones = "UTC")
+chicago["Actual Time"] = strftime(date, format = "%Y/%m/%d %H:%M:%S", tz = "America/Chicago")
+chicago
+
+indiana <-
+  df_zip_tz %>% 
+  filter(timezone == "America/Indiana/Indianapolis")
+date = force_tzs(indiana$AskedOnUtc, tzones = "UTC")
+indiana["Actual Time"] = strftime(date, format = "%Y/%m/%d %H:%M:%S", tz = "America/Indiana/Indianapolis")
+indiana
+
+la <-
+  df_zip_tz %>% 
+  filter(timezone == "America/Los_Angeles")
+date = force_tzs(la$AskedOnUtc, tzones = "UTC")
+la["Actual Time"] = strftime(date, format = "%Y/%m/%d %H:%M:%S", tz = "America/Los_Angeles")
+la
+
+detroit <-
+  df_zip_tz %>% 
+  filter(timezone == "America/Detroit")
+date = force_tzs(detroit$AskedOnUtc, tzones = "UTC")
+detroit["Actual Time"] = strftime(date, format = "%Y/%m/%d %H:%M:%S", tz = "America/Detroit")
+detroit
+
+ny <-
+  df_zip_tz %>% 
+  filter(timezone == "America/New_York")
+date = force_tzs(ny$AskedOnUtc, tzones = "UTC")
+ny["Actual Time"] = strftime(date, format = "%Y/%m/%d %H:%M:%S", tz = "America/New_York")
+ny
+
+denver <-
+  df_zip_tz %>% 
+  filter(timezone == "America/New_York")
+date = force_tzs(denver$AskedOnUtc, tzones = "UTC")
+denver["Actual Time"] = strftime(date, format = "%Y/%m/%d %H:%M:%S", tz = "America/Denver")
+denver
+
+phoenix <-
+  df_zip_tz %>% 
+  filter(timezone == "America/Phoenix")
+date = force_tzs(phoenix$AskedOnUtc, tzones = "UTC")
+phoenix["Actual Time"] = strftime(date, format = "%Y/%m/%d %H:%M:%S", tz = "America/Phoenix")
+phoenix
+
+toronto <-
+  df_zip_tz %>% 
+  filter(timezone == "America/Toronto")
+date = force_tzs(toronto$AskedOnUtc, tzones = "UTC")
+toronto["Actual Time"] = strftime(date, format = "%Y/%m/%d %H:%M:%S", tz = "America/Toronto")
+toronto
+
+honolulu <-
+  df_zip_tz %>% 
+  filter(timezone == "Pacific/Honolulu")
+date = force_tzs(honolulu$AskedOnUtc, tzones = "UTC")
+honolulu["Actual Time"] = strftime(date, format = "%Y/%m/%d %H:%M:%S", tz = "Pacific/Honolulu")
+honolulu
+```
+
+## Time Zone Merge
+
+```{r}
+all_time <-
+  full_join(chicago, denver) %>% 
+
+  full_join(detroit) %>% 
+  full_join(ny) %>% 
+  full_join(la) %>% 
+  full_join(toronto) %>% 
+  full_join(honolulu) %>%
+  full_join(phoenix) %>% 
+  full_join(indiana)
+all_time
+```
+
+```{r}
+library(tidyr)
+timesplit <-
+  indiana %>%
+  separate("Actual Time", into = c("year", "month", "day", "hour", "minutes", "seconds")) %>% 
+  ggplot(mapping = aes(hour)) +
+  geom_bar()
+timesplit
+```
+
+## Divorce Count per County
+
+```{r}
+#str_detect(PostText, "[Ee]x[ -]")
+all_timesplit <-
+  all_time %>%
+  mutate(cat = str_detect(Subcategory, "[Dd]ivorce")) %>% 
+  filter(cat == "TRUE") %>% 
+  separate("Actual Time", into = c("year", "month", "day", "hour", "minutes", "seconds")) 
+
+all_timesplit
+```
+
+```{r}
+
+div_county <- 
+  all_timesplit %>% 
+    group_by(county_fips, StateAbbr) %>% 
+    count(Subcategory) 
+
+div_county
+
+div_dem <- 
+   all_timesplit %>% 
+    # group_by(county_fips, StateAbbr) %>% 
+    select(c(county_fips, StateAbbr, EthnicIdentity, Age, Gender, MaritalStatus)) %>% 
+  group_by(StateAbbr) %>% 
+  count(EthnicIdentity) %>% 
+  arrange(desc(n))
+
+div_dem_fl <- 
+  div_dem %>% 
+    mutate(other = str_detect(EthnicIdentity, "[Oo]ther"),
+           multi = str_detect(EthnicIdentity, ",")) %>% 
+    filter(StateAbbr == "FL")
+  
+
+```
+
+```{r}
+all_timesplit %>% 
+  group_by(hour, StateAbbr) %>% 
+  count(hour) %>% 
+  ggplot(mapping = aes(hour, n, color = StateAbbr)) +
+  geom_point()
+```
+
+```{r}
+div_dem_fl %>% 
+  ggplot(mapping = aes(n, EthnicIdentity)) +
+    geom_point()
+```
+
+```{r}
+# ALL_DATA <-
+#   merge(big_data_1, df_attorney_data, by = c("AttorneyUno", "StateAbbr"))
+# 
+# ALL_DATA
+```
