@@ -280,6 +280,42 @@ client_posts
 # big_data_1_wide %>%
 #   filter((str_detect(Subcategory, "[Dd]ivorce")))
 
-write.csv(client_posts, './data')
+write.csv(client_posts, './data/firstClientPosts.csv', row.names = FALSE)
 
 ```
+```{r}
+
+posts_unresolved <-
+  big_data_1_wide %>%
+  filter((str_detect(Subcategory, "[Dd]ivorce"))) %>%
+  filter(AttorneyUno != "NULL" & ClosedByAttorneyUno == "NULL") %>% 
+  select(PostText)
+
+posts_unopened <-
+  big_data_1_wide %>%
+  filter((str_detect(Subcategory, "[Dd]ivorce"))) %>%
+  filter(AttorneyUno == "NULL" & ClosedByAttorneyUno == "NULL") %>% 
+  select(PostText)
+
+posts_resolved <-
+  big_data_1_wide %>%
+  filter((str_detect(Subcategory, "[Dd]ivorce"))) %>%
+  filter(AttorneyUno != "NULL" & ClosedByAttorneyUno != "NULL") %>% 
+  select(PostText)
+  
+
+posts_unresolved
+posts_resolved
+posts_unopened
+
+write.csv(posts_unresolved, './posts_unresolved.csv', row.names = FALSE)
+write.csv(posts_resolved, './posts_resolved.csv', row.names = FALSE)
+write.csv(posts_unopened, './posts_unopened.csv', row.names = FALSE)
+
+```
+
+
+```{r}
+
+```
+
