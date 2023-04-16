@@ -245,18 +245,41 @@ big_data_1_wide
 
 
 ```{r}
+#Run the section below once to clean the `CreatedUtc` column and change to date/time
+
+
+# big_data_1_wide <- 
+#   big_data_1_wide %>% 
+#   mutate(
+#     CreatedUtc = if_else(
+#       str_detect(CreatedUtc, "^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}$"),
+#       CreatedUtc,
+#       NA_character_
+#     ),
+#     CreatedUtc = ymd_hms(CreatedUtc)
+#   )
 
 client_first_posts <-
   big_data_1_wide %>%
     filter((str_detect(Subcategory, "[Dd]ivorce"))) %>%
-    arrange(desc(CreatedUtc)) %>%
+    arrange(CreatedUtc) %>%
     group_by(ClientUno) %>%
     slice(1) %>%
-    arrange(desc(CreatedUtc)) %>%
-    select(CreatedUtc, ClientUno, StateAbbr, PostText, AttorneyUno, ClosedByAttorneyUno)
+    arrange(CreatedUtc) %>%
+    select(PostText, ClientUno, CreatedUtc, StateAbbr, AttorneyUno, ClosedByAttorneyUno)
 
-client_first_posts
+# client_first_posts
 
-# big_data_1_wide %>%  
+client_posts <-
+  client_first_posts %>% 
+  ungroup() %>% 
+  select(PostText)
+
+client_posts
+
+# big_data_1_wide %>%
 #   filter((str_detect(Subcategory, "[Dd]ivorce")))
+
+write.csv(client_posts, './data')
+
 ```
