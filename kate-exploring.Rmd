@@ -375,3 +375,33 @@ head(dat, 5)
 set.seed(100)
 wordcloud(words = dat$word, freq = dat$freq, , min.freq = 15, max.words=120, random.order=TRUE, scale = c(4, .25), colors=brewer.pal(8, "Set2"))
 ```
+
+```{r}
+reddit_text <-
+  read_csv("./reddit_data/bigcsv.csv")
+
+reddit = Corpus(VectorSource(reddit_text))
+#Conversion to Lowercase
+reddit = tm_map(reddit, PlainTextDocument)
+reddit = tm_map(reddit, tolower)
+ 
+#Removing Punctuation
+reddit = tm_map(reddit, removePunctuation)
+ 
+#Remove stopwords
+reddit = tm_map(reddit, removeWords, c("cloth", stopwords("english")))
+ 
+# Eliminate white spaces
+reddit = tm_map(reddit, stripWhitespace)
+
+DTM_r <- TermDocumentMatrix(reddit)
+mat_r <- as.matrix(DTM_r)
+f_r <- sort(rowSums(mat_r),decreasing=TRUE)
+dat_r <- data.frame(word = names(f_r),freq=f_r)
+head(dat_r, 5)
+```
+
+```{r}
+set.seed(100)
+wordcloud(words = dat_r$word, freq = dat_r$freq, , min.freq = 15, max.words=120, random.order=TRUE, scale = c(4, .15), colors=brewer.pal(8, "Set2"))
+```
