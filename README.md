@@ -1,3 +1,4 @@
 # datafest-2023
 
-DataFest 2023 Repository by Olin students Izzie Abilheira, Lily Dao, Reuben Lewis, Kate McCurley, and Maya Sivanandan. 
+This project contains the code from the Babson Olin Wellesley [DataFest 2023](https://ww2.amstat.org/education/datafest/).
+Created by team Technical Difficulties: Izzie Abilheira, Lily Dao, Reuben Lewis, Kate McCurley, and Maya Sivanandan.
