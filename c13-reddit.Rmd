@@ -10,6 +10,8 @@ What are common feelings that may create friction in the interaction between the
 
 Our group was provided data from the American Bar Association with information about attorneys, clients, and the interactions between them. We were particularly interested in the interactions between the attorneys and the clients regarding cases related to divorce due to the high-emotion nature of the topic. We pulled in data from Reddit, specifically r/legaladvice, to gain a better understanding of the tone that users and commenters use on a more informal site vs. with pro bono lawyers with the ABA. We ran the text data from the posts and the conversations through sentiment analysis to understand the common tone of these conversations and how lawyers can approach these conversations for the benefit of the client.
 
+### Data Wrangaling
+
 ```{r setup, include=FALSE}
 library(tidyverse)
 # knitr options
@@ -130,11 +132,13 @@ full_data
 
 ### Data Visualization
 
-We visualized the data per state.
+We visualized the divorce-related data per state.
 
-```{r visualizations}
-![map vis](images/divorce_map.png)
+```{r echo=FALSE, out.width = "30%", fig.align = "center"}
+knitr::include_graphics("images/divorce_map.png")
 ```
+
+### Preparing Data for Sentiment Analysis
 
 ```{r divorce posts}
 #Run the section below once to clean the `CreatedUtc` column and change to date/time
@@ -205,13 +209,23 @@ write.csv(posts_unopened, './posts_unopened.csv', row.names = FALSE)
 
 The compiled CSV data of the unresolved, resolved, and unopened divorce-related ABA posts were then used to conduct sentiment analysis in Python. We made two sentiment analyses: one based on the divorce-related Reddit posts and comments from r/legaladvice and the other based on the divorce-related posts and replies from the pro bono lawyers from the ABA.
 
-All of this processing can be found in the 'python-processing' folder. Below are our gathered insights
+All of this processing can be found in the 'python-processing' folder.
+
+```{r echo=FALSE, out.width = "30%", fig.align = "center"}
+knitr::include_graphics("images/compare_emotions.png")
+```
+
+```{r echo=FALSE, out.width = "30%", fig.align = "center"}
+knitr::include_graphics("images/overall_emotions.png")
+```
 
 ### Insights
 
 Through looking at the data provided to us and data from Reddit, we found some interesting trends within the sentiment analysis. One trend we noticed was the language used in correspondence (for both Reddit and ABA divorce cases) had a significant amount of fear detected, more than any other emotion detected (as seen on our slides). The emotion level for fear was between 0.4 and 0.5 on a scale from zero to one. It is important to note that ABA correspondence has more fear than Reddit correspondence and when the attorney comes into play, the fear level increases. Reddit likely does not experience as high levels of fear detected in the speech because of the informality and anonymity of the platform. Also, by the time a client reaches the step of reaching out to a lawyer, their fear level has had time to increase. Knowing this, ABA attorneys should adjust the language they use to be more approachable which would put the client at ease. We would expect this to decrease the fear level and increase the happiness level of ABA correspondence.
 
-\
+```{r echo=FALSE, out.width = "30%", fig.align = "center"}
+knitr::include_graphics("images/word_cloud.png")
+```
 
 We then chose to look at how the resolution of posts correlates with their emotional score. We had 3 categories of resolution based on whether posts had a \`TakenByAttorneyUno\` and \`ClosedByAttorneyUno\` (resolved), only a \`TakenByAttorneyUno\` (unresolved), or neither (unopened). As shown in our slides, we found that the unopened posts had higher scores in anger and sadness but lower in fear when compared to the other two categories. This could be because a more fearful tone is interpreted to be more urgent, while high anger and sadness can be seen as hysterical or hard to deal with. ABA attorneys could be encouraged to work with emotionally intense questions to reach a larger number of clients. The ABA could also provide more resources to clients on how to engage with the attorneys so that their issues are conveyed clearly and reasonably, and so they can be more likely to receive assistance. A potential option for this is a message template for specific categories or subcategories, so clients can more easily share their situation and attorneys can more easily gain key information. This could also potentially reduce the time needed to resolve issues.
 
