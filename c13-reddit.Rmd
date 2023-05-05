@@ -18,12 +18,6 @@ library(tidyverse)
 knitr::opts_chunk$set(echo = TRUE)
 library(lubridate)
 library(timechange)
-library(urbnmapr)
-library(urbnthemes)
-library(sf)
-require(gridExtra)
-set_urbn_defaults(style = "map")
-
 ```
 
 ```{r read-data}
@@ -76,17 +70,17 @@ df_population <- right_join(df_pop_named, st_crosswalk, by = "state")
 
 df_attorney_data <-
   merge(df_attorneys, df_attorneytimeentries, by = c("AttorneyUno", "StateAbbr")) %>%
-  subset(select = -c(Id.x, Id.y, CreatedUtc, EnteredOnUtc, TimeEntryUno))
+  subset(select = -c(Id.x, Id.y, EnteredOnUtc, TimeEntryUno))
 
 df_attorney_data
 ```
 
-```{r question data}
+```{r question_data}
 #merge question data based on the unique identifier for the question and state
 
 df_question_data <-
   merge(df_questions, df_questionposts, by = c("QuestionUno", "StateAbbr")) %>%
-  subset(select = -c(Id.x, Id.y, CategoryUno, SubcategoryUno, TakenOnUtc, ClosedOnUtc, LegalDeadline, CreatedUtc))
+  subset(select = -c(Id.x, Id.y, CategoryUno, SubcategoryUno, TakenOnUtc, ClosedOnUtc, LegalDeadline))
 
 df_question_data <-
   df_question_data %>%
@@ -125,7 +119,7 @@ df_client_state_data
 
 full_data <-
   merge(df_question_data, df_client_state_data, by = c("ClientUno", "StateAbbr")) %>%
-  subset(select = -c(ClientUno, QuestionUno, StateName))
+  subset(select = -c(QuestionUno, StateName))
 
 full_data
 ```
@@ -142,8 +136,8 @@ knitr::include_graphics("images/divorce_map.png")
 
 ```{r divorce posts}
 #Run the section below once to clean the `CreatedUtc` column and change to date/time
-# big_data_1_wide <- 
-#   big_data_1_wide %>% 
+# full_data <-
+#   full_data %>%
 #   mutate(
 #     CreatedUtc = if_else(
 #       str_detect(CreatedUtc, "^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}$"),
@@ -153,14 +147,16 @@ knitr::include_graphics("images/divorce_map.png")
 #     CreatedUtc = ymd_hms(CreatedUtc)
 #   )
 
+
+
 client_first_posts <-
-  big_data_1_wide %>%
+  full_data %>%
     filter((str_detect(Subcategory, "[Dd]ivorce"))) %>%
     arrange(CreatedUtc) %>%
     group_by(ClientUno) %>%
     slice(1) %>%
     arrange(CreatedUtc) %>%
-    select(PostText, ClientUno, CreatedUtc, StateAbbr, AttorneyUno, ClosedByAttorneyUno)
+    select(PostText, ClientUno, CreatedUtc, StateAbbr, AttorneyUno)
 # client_first_posts
 
 client_posts <-
@@ -179,19 +175,19 @@ write.csv(client_posts, './data/firstClientPosts.csv', row.names = FALSE)
 posts_unresolved <-
   full_data %>%
   filter((str_detect(Subcategory, "[Dd]ivorce"))) %>%
-  filter(AttorneyUno != "NULL" & ClosedByAttorneyUno == "NULL") %>% 
+  filter(AttorneyUno != "NULL") %>% 
   select(PostText)
 
 posts_unopened <-
   full_data %>%
   filter((str_detect(Subcategory, "[Dd]ivorce"))) %>%
-  filter(AttorneyUno == "NULL" & ClosedByAttorneyUno == "NULL") %>% 
+  filter(AttorneyUno == "NULL") %>% 
   select(PostText)
 
 posts_resolved <-
   full_data %>%
   filter((str_detect(Subcategory, "[Dd]ivorce"))) %>%
-  filter(AttorneyUno != "NULL" & ClosedByAttorneyUno != "NULL") %>% 
+  filter(AttorneyUno != "NULL") %>% 
   select(PostText)
   
 posts_unresolved
