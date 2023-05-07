@@ -72,7 +72,7 @@ df_attorney_data <-
   merge(df_attorneys, df_attorneytimeentries, by = c("AttorneyUno", "StateAbbr")) %>%
   subset(select = -c(Id.x, Id.y, EnteredOnUtc, TimeEntryUno))
 
-df_attorney_data
+head(df_attorney_data,10)
 ```
 
 ```{r question_data}
@@ -90,7 +90,7 @@ df_question_data <-
   df_question_data %>%
   rename(AttorneyUno = ClosedByAttorneyUno)
 
-df_question_data
+head(df_question_data,10)
 ```
 
 ```{r categories data}
@@ -100,8 +100,7 @@ df_categories_data <-
   merge(df_categories, df_subcategories, by = c("CategoryUno", "StateAbbr")) %>%
   subset(select = -c(Id.x, Id.y))
 
-
-df_categories_data
+head(df_categories_data,10)
 ```
 
 ```{r client state data}
@@ -111,7 +110,7 @@ df_client_state_data <-
   merge(df_clients, df_statesites, by = c("StateAbbr", "StateName")) %>%
   subset(select = -c(Id.x, Id.y, CreatedUtc))
 
-df_client_state_data
+head(df_client_state_data,10)
 ```
 
 ```{r full data set}
@@ -121,7 +120,7 @@ full_data <-
   merge(df_question_data, df_client_state_data, by = c("ClientUno", "StateAbbr")) %>%
   subset(select = -c(QuestionUno, StateName))
 
-full_data
+head(full_data,10)
 ```
 
 ### Data Visualization
@@ -190,9 +189,9 @@ posts_resolved <-
   filter(AttorneyUno != "NULL") %>% 
   select(PostText)
   
-posts_unresolved
-posts_resolved
-posts_unopened
+head(posts_unresolved,10)
+head(posts_resolved,10)
+head(posts_unopened,10)
 
 #export data to csv to be processed in python
 write.csv(posts_unresolved, './posts_unresolved.csv', row.names = FALSE)
