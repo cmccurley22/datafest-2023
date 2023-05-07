@@ -1,3 +1,9 @@
+---
+output:
+  github_document:
+    toc: true
+---
+
 # Divorced From Feelings
 
 *Team Technical Difficulties:* Lily Dao, Reuben Lewis, Maya Sivanandan, Kate McCurley, and Izzie Abilheira
